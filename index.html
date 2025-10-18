@@ -1,1 +1,196 @@
-<h1>Welcome</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Category Photo Gallery - Meily Sy</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header>
+        <h1>Meily Photo Gallery</h1>
+        <p>Favourite Photos by Category</p>
+    </header>
+
+    <main>
+        <div class="container">
+
+            <!--Mountain-->
+            <section>
+                <h2 class="category-title">Mountains</h2>
+                <div class="gallery" id="mountain">
+                    <figure>
+                        <img src="images/Mountain.jpg" alt="Mountain" loading="lazy"/>
+                        <figcaption>Mountain Lake</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/Mountain 1.jpg" alt="Mountain" loading="lazy"/>
+                        <figcaption>Mountain</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/Road.jpg" alt="Mountain Road" loading="lazy"/>
+                        <figcaption>Road to the Mountain</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/Lake.jpg" alt="Mountain with Lake View" loading="lazy"/>
+                        <figcaption>Mountain with Lake View</figcaption>
+                    </figure>
+                </div>
+            </section>
+            <!--Beach-->
+            <section>
+                <h2 class="category-title">Beaches</h2>
+                <div class="gallery" id="beach">
+                    <figure>
+                        <img src="images/Beach.jpg" alt="Sunset at the Beach" loading="lazy"/>
+                        <figcaption>Sunset at the Beach</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/Beach Sunset.jpg" alt="Sunset at the Beach" loading="lazy"/>
+                        <figcaption>Sunset at the Beach</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/Beach Sunset 1.jpg" alt="Sunset at the Beach" loading="lazy"/>
+                        <figcaption>Sunset at the Beach</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/Beach Sunset 2.jpg" alt="Sunset at the Beach" loading="lazy"/>
+                        <figcaption>Sunset at the Beach</figcaption>
+                    </figure>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+      Copyright &copy; <span id="year"></span> Meily Sy<br>
+        <a href="mailto:sy.m@northeastern.edu">sy.m@northeastern.edu</a></p>
+        </p>
+    </footer>
+
+    <!--Lightbox-->
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+        <div class="lightbox-inner">
+            <img id="lightbox-img" alt="Expanded view"/>
+            <button class="close-btn" id="close-btn" aria-label="Close viewer">X</button>
+            <!-- Visible nav arrows -->
+            <button class="nav-arrow prev" id="nav-prev" aria-label="Previous">&#10094;</button>
+            <button class="nav-arrow next" id="nav-next" aria-label="Next">&#10095;</button>
+        </div>
+        <div class="caption" id="lightbox-cap"></div>
+        <!--Edge click zones for nav (kept for larger hit targets) -->
+        <div class="zone left" id="zone-left" aria-label="Previous image"></div>
+        <div class="zone right" id="zone-right" aria-label="Next image"></div>
+    </div>
+
+    <script>
+        // Footer year
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        // Elements
+        const figures = Array.from(document.querySelectorAll(".gallery figure"));
+        const lightbox = document.getElementById("lightbox");
+        const lbImg = document.getElementById("lightbox-img");
+        const lbCap = document.getElementById("lightbox-cap");
+        const zoneLeft = document.getElementById("zone-left");
+        const zoneRight = document.getElementById("zone-right");
+        const closeBtn = document.getElementById("close-btn");
+        const navPrev = document.getElementById('nav-prev');
+        const navNext = document.getElementById('nav-next');
+        let index = 0;
+
+        if (figures.length === 0) {
+            // nothing to do
+            console.warn('No gallery figures found');
+        }
+
+        // Show error badge if image fails to load
+        figures.forEach((fig) => {
+            const img = fig.querySelector("img");
+            img.addEventListener("error", () => {
+                let badge = fig.querySelector(".error-badge");
+                if (!badge) {
+                    badge = document.createElement("div");
+                    badge.className = "error-badge";
+                    badge.textContent = "Missing";
+                    fig.appendChild(badge);
+                }
+                badge.style.display = "block";
+                fig.classList.add("load-error");
+            }, { passive: true });
+        });
+
+        function show(i) {
+            if (figures.length === 0) return;
+            index = (i + figures.length) % figures.length;
+            const fig = figures[index];
+            const img = fig.querySelector("img");
+            const cap = (fig.querySelector("figcaption") && fig.querySelector("figcaption").textContent) || img.alt || "";
+            lbImg.src = img.src;
+            lbImg.alt = img.alt || '';
+            lbCap.textContent = cap;
+        }
+
+        function openAt(i) {
+            show(i);
+            lightbox.classList.add("show");
+            lightbox.setAttribute("aria-hidden", "false");
+        }
+
+        function closeBox() {
+            lightbox.classList.remove('show');
+            lightbox.setAttribute('aria-hidden', 'true');
+            lbImg.removeAttribute('src');
+            lbCap.textContent = "";
+        }
+
+        // Click thumbnail to open
+        figures.forEach((figure, i) => {
+            const img = figure.querySelector("img");
+            if (!img) return;
+            img.addEventListener('click', (e) => { e.stopPropagation(); openAt(i); });
+        });
+
+    // Edge click navigation (guard when missing)
+    if (zoneLeft) zoneLeft.addEventListener('click', (e) => { e.stopPropagation(); show(index - 1); });
+    if (zoneRight) zoneRight.addEventListener('click', (e) => { e.stopPropagation(); show(index + 1); });
+
+    // Visible nav buttons (guard when missing)
+    if (navPrev) navPrev.addEventListener('click', (e) => { e.stopPropagation(); show(index - 1); });
+    if (navNext) navNext.addEventListener('click', (e) => { e.stopPropagation(); show(index + 1); });
+
+    // X button to close (guard when missing)
+    if (closeBtn) closeBtn.addEventListener('click', (e)=>{e.stopPropagation(); closeBox();});
+
+        // Click outside image to close
+        lightbox.addEventListener('click', (e) => {
+            // if clicked directly on the lightbox (not inner area) close
+            if (!e.target.closest('.lightbox-inner')) closeBox();
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('show')) return;
+            if (e.key === 'ArrowLeft') { e.preventDefault(); show(index - 1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); show(index + 1); }
+            if (e.key === 'Escape') { e.preventDefault(); closeBox(); }
+        });
+
+        // Touch navigation (swipe)
+        let startX = null;
+        lightbox.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        }, {passive: true});
+
+        lightbox.addEventListener('touchend', (e) => {
+            if (startX === null) return;
+            const dx = e.changedTouches[0].clientX - startX;
+            if (Math.abs(dx) > 50) {
+                dx > 0 ? show(index - 1) : show(index + 1);
+            }
+            startX = null;
+        }, {passive: true});
+
+    </script>
+</body>
+</html>
